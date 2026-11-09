@@ -1016,11 +1016,11 @@ interval:
           uint32_t elapsed = millis() - id(last_activity);
           bool busy = id(echo_state) == 1 || id(echo_state) == 2 || id(alarm_active);
 
-          // Auto-return to clock page
+          // Auto-return to Mac stats page (tile 3)
           uint32_t clock_timeout = (uint32_t)id(clock_return_timeout).state;
           if (clock_timeout > 0 && !busy && !id(screen_off)) {
             if (elapsed > clock_timeout * 1000) {
-              lv_obj_set_tile_id(id(main_tiles), 0, 0, LV_ANIM_ON);
+              lv_obj_set_tile_id(id(main_tiles), 3, 0, LV_ANIM_ON);
             }
           }
 
