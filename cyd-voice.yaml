@@ -899,6 +899,97 @@ lvgl:
                         text_align: CENTER
 
 
+          # ==========================================
+          # TILE 3: MAC MINI STATS (sensor.mac_mini_*)
+          # ==========================================
+          - id: tile_mac
+            row: 0
+            column: 3
+            dir: HOR
+            widgets:
+              - obj:
+                  width: 320
+                  height: 240
+                  bg_opa: TRANSP
+                  border_width: 0
+                  pad_all: 8
+                  scrollable: false
+                  layout:
+                    type: FLEX
+                    flex_flow: ROW_WRAP
+                    flex_align_main: CENTER
+                    flex_align_cross: START
+                    pad_row: 8
+                    pad_column: 8
+                  widgets:
+                    - label: {text: "MAC MINI", text_font: font_small, text_color: 0x9B9B9B, width: 304, text_align: CENTER}
+                    - obj:
+                        width: 96
+                        height: 96
+                        styles: style_card
+                        pad_all: 8
+                        scrollable: false
+                        layout: {type: FLEX, flex_flow: COLUMN, flex_align_main: SPACE_BETWEEN, pad_row: 0}
+                        widgets:
+                          - label: {text: "CPU", text_font: font_small, text_color: 0x9B9B9B}
+                          - label: {id: lbl_mac_cpu, text: "--", text_font: font_title, text_color: 0x2196F3}
+                          - label: {id: lbl_mac_cpu_sub, text: "", text_font: font_small, text_color: 0x9B9B9B}
+                    - obj:
+                        width: 96
+                        height: 96
+                        styles: style_card
+                        pad_all: 8
+                        scrollable: false
+                        layout: {type: FLEX, flex_flow: COLUMN, flex_align_main: SPACE_BETWEEN, pad_row: 0}
+                        widgets:
+                          - label: {text: "GPU", text_font: font_small, text_color: 0x9B9B9B}
+                          - label: {id: lbl_mac_gpu, text: "--", text_font: font_title, text_color: 0x9C27B0}
+                          - label: {id: lbl_mac_gpu_sub, text: "", text_font: font_small, text_color: 0x9B9B9B}
+                    - obj:
+                        width: 96
+                        height: 96
+                        styles: style_card
+                        pad_all: 8
+                        scrollable: false
+                        layout: {type: FLEX, flex_flow: COLUMN, flex_align_main: SPACE_BETWEEN, pad_row: 0}
+                        widgets:
+                          - label: {text: "MEMORY", text_font: font_small, text_color: 0x9B9B9B}
+                          - label: {id: lbl_mac_mem, text: "--", text_font: font_title, text_color: 0x009688}
+                          - label: {id: lbl_mac_mem_sub, text: "", text_font: font_small, text_color: 0x9B9B9B}
+                    - obj:
+                        width: 96
+                        height: 96
+                        styles: style_card
+                        pad_all: 8
+                        scrollable: false
+                        layout: {type: FLEX, flex_flow: COLUMN, flex_align_main: SPACE_BETWEEN, pad_row: 0}
+                        widgets:
+                          - label: {text: "TEMP", text_font: font_small, text_color: 0x9B9B9B}
+                          - label: {id: lbl_mac_temp, text: "--", text_font: font_title, text_color: 0xFF9800}
+                          - label: {id: lbl_mac_temp_sub, text: "", text_font: font_small, text_color: 0x9B9B9B}
+                    - obj:
+                        width: 96
+                        height: 96
+                        styles: style_card
+                        pad_all: 8
+                        scrollable: false
+                        layout: {type: FLEX, flex_flow: COLUMN, flex_align_main: SPACE_BETWEEN, pad_row: 0}
+                        widgets:
+                          - label: {text: "POWER", text_font: font_small, text_color: 0x9B9B9B}
+                          - label: {id: lbl_mac_power, text: "--", text_font: font_title, text_color: 0xFFC107}
+                          - label: {id: lbl_mac_power_sub, text: "", text_font: font_small, text_color: 0x9B9B9B}
+                    - obj:
+                        width: 96
+                        height: 96
+                        styles: style_card
+                        pad_all: 8
+                        scrollable: false
+                        layout: {type: FLEX, flex_flow: COLUMN, flex_align_main: SPACE_BETWEEN, pad_row: 0}
+                        widgets:
+                          - label: {text: "NETWORK/s", text_font: font_small, text_color: 0x9B9B9B}
+                          - label: {id: lbl_mac_net, text: "--", text_font: font_title, text_color: 0x4CAF50}
+                          - label: {id: lbl_mac_net_sub, text: "", text_font: font_small, text_color: 0x9B9B9B}
+
 # --- Intervals ---
 interval:
   - interval: 1s
@@ -1008,6 +1099,95 @@ sensor:
   - platform: uptime
     name: "Uptime"
     update_interval: 60s
+  # --- Mac mini stats (tile 3) ---
+  - platform: homeassistant
+    id: mac_cpu
+    entity_id: sensor.mac_mini_cpu_usage
+    on_value:
+      - lvgl.label.update:
+          id: lbl_mac_cpu
+          text: !lambda |-
+            if (isnan(x)) return std::string("--"); return str_sprintf("%.0f%%", x);
+          text_color: !lambda 'return lv_color_hex(x > 80 ? 0xF44336 : 0x2196F3);'
+  - platform: homeassistant
+    id: mac_gpu
+    entity_id: sensor.mac_mini_gpu_usage
+    on_value:
+      - lvgl.label.update:
+          id: lbl_mac_gpu
+          text: !lambda |-
+            if (isnan(x)) return std::string("--"); return str_sprintf("%.0f%%", x);
+  - platform: homeassistant
+    id: mac_gpu_temp
+    entity_id: sensor.mac_mini_gpu_temp
+    on_value:
+      - lvgl.label.update:
+          id: lbl_mac_gpu_sub
+          text: !lambda |-
+            if (isnan(x)) return std::string("");
+            return str_sprintf("%.0f°C", x);
+  - platform: homeassistant
+    id: mac_mem
+    entity_id: sensor.mac_mini_memory_used
+    on_value:
+      - lvgl.label.update:
+          id: lbl_mac_mem
+          text: !lambda |-
+            if (isnan(x)) return std::string("--"); return str_sprintf("%.0f%%", x);
+  - platform: homeassistant
+    id: mac_mem_used
+    entity_id: sensor.mac_mini_memory_used
+    attribute: used_gb
+    on_value:
+      - lvgl.label.update:
+          id: lbl_mac_mem_sub
+          text: !lambda |-
+            if (isnan(id(mac_mem_used).state) || isnan(id(mac_mem_total).state)) return std::string("");
+            return str_sprintf("%.0f / %.0f GB", id(mac_mem_used).state, id(mac_mem_total).state);
+  - platform: homeassistant
+    id: mac_mem_total
+    entity_id: sensor.mac_mini_memory_used
+    attribute: total_gb
+    on_value:
+      - lvgl.label.update:
+          id: lbl_mac_mem_sub
+          text: !lambda |-
+            if (isnan(id(mac_mem_used).state) || isnan(id(mac_mem_total).state)) return std::string("");
+            return str_sprintf("%.0f / %.0f GB", id(mac_mem_used).state, id(mac_mem_total).state);
+  - platform: homeassistant
+    id: mac_temp
+    entity_id: sensor.mac_mini_cpu_temp
+    on_value:
+      - lvgl.label.update:
+          id: lbl_mac_temp
+          text: !lambda |-
+            if (isnan(x)) return std::string("--"); return str_sprintf("%.0f°C", x);
+          text_color: !lambda 'return lv_color_hex(x > 80 ? 0xF44336 : 0xFF9800);'
+  - platform: homeassistant
+    id: mac_power
+    entity_id: sensor.mac_mini_power
+    on_value:
+      - lvgl.label.update:
+          id: lbl_mac_power
+          text: !lambda |-
+            if (isnan(x)) return std::string("--"); return str_sprintf("%.1f W", x);
+  - platform: homeassistant
+    id: mac_net_in
+    entity_id: sensor.mac_mini_net_in
+    on_value:
+      - lvgl.label.update:
+          id: lbl_mac_net
+          text: !lambda |-
+            if (isnan(x)) return std::string("--"); return x >= 1024 ? str_sprintf("%.1f MB", x / 1024) : str_sprintf("%.0f KB", x);
+  - platform: homeassistant
+    id: mac_net_out
+    entity_id: sensor.mac_mini_net_out
+    on_value:
+      - lvgl.label.update:
+          id: lbl_mac_net_sub
+          text: !lambda |-
+            if (isnan(x)) return std::string("");
+            return std::string("out ") + (x >= 1024 ? str_sprintf("%.1f MB", x / 1024) : str_sprintf("%.0f KB", x));
 
 text_sensor:
   - platform: wifi_info
@@ -1018,6 +1198,13 @@ text_sensor:
       name: "Connected SSID"
     mac_address:
       name: "MAC Address"
+  - platform: homeassistant
+    id: mac_thermal
+    entity_id: sensor.mac_mini_thermal_state
+    on_value:
+      - lvgl.label.update:
+          id: lbl_mac_temp_sub
+          text: !lambda 'return x == "unavailable" || x == "unknown" ? std::string("") : x;'
 
 # --- Button state feedback (disabled — requires static entity_ids) ---
 # To enable: uncomment and set entity_ids for your devices.
