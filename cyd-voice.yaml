@@ -543,10 +543,10 @@ script:
             return std::string(buf);
           };
 
-          lv_label_set_text(id(lbl_btn_1), get_glyph(id(btn1_icon).current_option().str()).c_str());
-          lv_label_set_text(id(lbl_btn_2), get_glyph(id(btn2_icon).current_option().str()).c_str());
-          lv_label_set_text(id(lbl_btn_3), get_glyph(id(btn3_icon).current_option().str()).c_str());
-          lv_label_set_text(id(lbl_btn_4), get_glyph(id(btn4_icon).current_option().str()).c_str());
+          lv_label_set_text(id(lbl_btn_1), get_glyph(std::string(id(btn1_icon).current_option())).c_str());
+          lv_label_set_text(id(lbl_btn_2), get_glyph(std::string(id(btn2_icon).current_option())).c_str());
+          lv_label_set_text(id(lbl_btn_3), get_glyph(std::string(id(btn3_icon).current_option())).c_str());
+          lv_label_set_text(id(lbl_btn_4), get_glyph(std::string(id(btn4_icon).current_option())).c_str());
 
   - id: screen_wake
     then:
@@ -735,7 +735,7 @@ lvgl:
                                 bg_opa: COVER
                               on_click:
                                 - homeassistant.action:
-                                    action: !lambda return id(btn1_action).current_option().str();
+                                    action: !lambda return std::string(id(btn1_action).current_option());
                                     data:
                                       entity_id: !lambda return id(btn1_entity).state;
                               widgets:
@@ -757,7 +757,7 @@ lvgl:
                                 bg_opa: COVER
                               on_click:
                                 - homeassistant.action:
-                                    action: !lambda return id(btn2_action).current_option().str();
+                                    action: !lambda return std::string(id(btn2_action).current_option());
                                     data:
                                       entity_id: !lambda return id(btn2_entity).state;
                               widgets:
@@ -791,7 +791,7 @@ lvgl:
                                 bg_opa: COVER
                               on_click:
                                 - homeassistant.action:
-                                    action: !lambda return id(btn3_action).current_option().str();
+                                    action: !lambda return std::string(id(btn3_action).current_option());
                                     data:
                                       entity_id: !lambda return id(btn3_entity).state;
                               widgets:
@@ -813,7 +813,7 @@ lvgl:
                                 bg_opa: COVER
                               on_click:
                                 - homeassistant.action:
-                                    action: !lambda return id(btn4_action).current_option().str();
+                                    action: !lambda return std::string(id(btn4_action).current_option());
                                     data:
                                       entity_id: !lambda return id(btn4_entity).state;
                               widgets:
