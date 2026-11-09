@@ -1,0 +1,27 @@
+alias: Get weather forecast
+description: >-
+  Returns the home weather forecast from Met.no: daily (next ~7 days) and hourly
+  (next ~24 h) entries with condition, temperature, low temperature,
+  precipitation (mm) and wind. Use it for any question about future weather,
+  rain, umbrella, or temperatures tomorrow or later this week.
+icon: mdi:weather-partly-cloudy
+mode: parallel
+sequence:
+  - action: weather.get_forecasts
+    target:
+      entity_id: weather.forecast_home
+    data:
+      type: daily
+    response_variable: daily
+  - action: weather.get_forecasts
+    target:
+      entity_id: weather.forecast_home
+    data:
+      type: hourly
+    response_variable: hourly
+  - variables:
+      result:
+        daily: "{{ daily['weather.forecast_home'].forecast }}"
+        hourly: "{{ hourly['weather.forecast_home'].forecast[:24] }}"
+  - stop: Forecast retrieved
+    response_variable: result
