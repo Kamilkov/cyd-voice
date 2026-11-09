@@ -8,7 +8,6 @@ esphome:
   friendly_name: ${friendly_name}
   platformio_options:
     board_build.flash_mode: dio
-    board_build.flash_size: 16MB
   on_boot:
     priority: -100
     then:
@@ -84,6 +83,7 @@ esphome:
 esp32:
   board: esp32-s3-devkitc-1
   variant: esp32s3
+  flash_size: 16MB
   framework:
     type: esp-idf
     version: recommended
@@ -125,12 +125,9 @@ wifi:
     - ssid: !secret wifi_ssid
       password: !secret wifi_password
       priority: 10
-    - ssid: !secret wifi_ssid_2
-      password: !secret wifi_password_2
-      priority: 5
   ap:
     ssid: "${name}-fallback"
-    password: "fallback123"
+    password: !secret ap_password
 
 captive_portal:
 
@@ -305,7 +302,7 @@ time:
     id: ha_time
     timezone: CET-1CEST,M3.5.0,M10.5.0/3
     servers:
-      - it.pool.ntp.org
+      - es.pool.ntp.org
       - pool.ntp.org
       - time.google.com
 
@@ -350,7 +347,7 @@ light:
     num_leds: 1
     name: "Status LED"
     id: status_led
-    restore_mode: ALWAYS_ON
+    restore_mode: RESTORE_DEFAULT_OFF
 
 # --- Touchscreen ---
 touchscreen:
@@ -546,10 +543,10 @@ script:
             return std::string(buf);
           };
 
-          lv_label_set_text(id(lbl_btn_1), get_glyph(id(btn1_icon).state).c_str());
-          lv_label_set_text(id(lbl_btn_2), get_glyph(id(btn2_icon).state).c_str());
-          lv_label_set_text(id(lbl_btn_3), get_glyph(id(btn3_icon).state).c_str());
-          lv_label_set_text(id(lbl_btn_4), get_glyph(id(btn4_icon).state).c_str());
+          lv_label_set_text(id(lbl_btn_1), get_glyph(id(btn1_icon).current_option().str()).c_str());
+          lv_label_set_text(id(lbl_btn_2), get_glyph(id(btn2_icon).current_option().str()).c_str());
+          lv_label_set_text(id(lbl_btn_3), get_glyph(id(btn3_icon).current_option().str()).c_str());
+          lv_label_set_text(id(lbl_btn_4), get_glyph(id(btn4_icon).current_option().str()).c_str());
 
   - id: screen_wake
     then:
@@ -738,7 +735,7 @@ lvgl:
                                 bg_opa: COVER
                               on_click:
                                 - homeassistant.action:
-                                    action: !lambda return id(btn1_action).state;
+                                    action: !lambda return id(btn1_action).current_option().str();
                                     data:
                                       entity_id: !lambda return id(btn1_entity).state;
                               widgets:
@@ -760,7 +757,7 @@ lvgl:
                                 bg_opa: COVER
                               on_click:
                                 - homeassistant.action:
-                                    action: !lambda return id(btn2_action).state;
+                                    action: !lambda return id(btn2_action).current_option().str();
                                     data:
                                       entity_id: !lambda return id(btn2_entity).state;
                               widgets:
@@ -794,7 +791,7 @@ lvgl:
                                 bg_opa: COVER
                               on_click:
                                 - homeassistant.action:
-                                    action: !lambda return id(btn3_action).state;
+                                    action: !lambda return id(btn3_action).current_option().str();
                                     data:
                                       entity_id: !lambda return id(btn3_entity).state;
                               widgets:
@@ -816,7 +813,7 @@ lvgl:
                                 bg_opa: COVER
                               on_click:
                                 - homeassistant.action:
-                                    action: !lambda return id(btn4_action).state;
+                                    action: !lambda return id(btn4_action).current_option().str();
                                     data:
                                       entity_id: !lambda return id(btn4_entity).state;
                               widgets:
@@ -872,7 +869,7 @@ lvgl:
                               text_align: CENTER
                     - label:
                         id: lbl_va_status
-                        text: "DI' \"OKAY, NABU\""
+                        text: "SAY \"OKAY, NABU\""
                         text_font: font_body
                         text_color: 0x0B56FC
                     - label:
@@ -900,8 +897,8 @@ interval:
           id: lbl_date
           text: !lambda |-
             if (!id(ha_time).now().is_valid()) return std::string("...");
-            static const char* giorni[] = {"Domenica","Lunedi","Martedi","Mercoledi","Giovedi","Venerdi","Sabato"};
-            static const char* mesi[] = {"Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno","Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"};
+            static const char* giorni[] = {"Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"};
+            static const char* mesi[] = {"January","February","March","April","May","June","July","August","September","October","November","December"};
             auto now = id(ha_time).now();
             char buf[40];
             snprintf(buf, sizeof(buf), "%s %d %s", giorni[now.day_of_week-1], now.day_of_month, mesi[now.month-1]);
@@ -946,20 +943,20 @@ interval:
             last_state = state;
             if (state == 0) {
               lv_obj_set_style_bg_color(id(voice_circle), lv_color_hex(0x0B56FC), 0);
-              lv_label_set_text(id(lbl_va_status), "DI' \"OKAY, NABU\"");
+              lv_label_set_text(id(lbl_va_status), "SAY \"OKAY, NABU\"");
               lv_obj_set_style_text_color(id(lbl_va_status), lv_color_hex(0x0B56FC), 0);
               lv_label_set_text(id(lbl_va_text), "");
             } else if (state == 1) {
               lv_obj_set_style_bg_color(id(voice_circle), lv_color_hex(0xFF0000), 0);
-              lv_label_set_text(id(lbl_va_status), "ASCOLTO...");
+              lv_label_set_text(id(lbl_va_status), "LISTENING...");
               lv_obj_set_style_text_color(id(lbl_va_status), lv_color_hex(0xFF0000), 0);
             } else if (state == 2) {
               lv_obj_set_style_bg_color(id(voice_circle), lv_color_hex(0x00CC00), 0);
-              lv_label_set_text(id(lbl_va_status), "RISPOSTA...");
+              lv_label_set_text(id(lbl_va_status), "REPLYING...");
               lv_obj_set_style_text_color(id(lbl_va_status), lv_color_hex(0x00CC00), 0);
             } else if (state == 3) {
               lv_obj_set_style_bg_color(id(voice_circle), lv_color_hex(0x0B56FC), 0);
-              lv_label_set_text(id(lbl_va_status), "DI' \"OKAY, NABU\"");
+              lv_label_set_text(id(lbl_va_status), "SAY \"OKAY, NABU\"");
               lv_obj_set_style_text_color(id(lbl_va_status), lv_color_hex(0x0B56FC), 0);
               id(echo_state) = 0;
               last_state = 0;
