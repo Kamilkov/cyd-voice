@@ -27,8 +27,8 @@ void DuplexSpeaker::start() {
   this->finish_requested_ = false;
   this->task_running_ = true;
 
-  // Enable amplifier (GPIO1, active LOW)
-  gpio_set_level(GPIO_NUM_1, 0);
+  // Enable amplifier (GPIO1, active LOW) unless muted
+  gpio_set_level(GPIO_NUM_1, this->mute_state_ ? 1 : 0);
 
   xTaskCreatePinnedToCore(speaker_task_, "duplex_spk", 4096, this, 5, &this->task_handle_, 0);
   this->state_ = speaker::STATE_RUNNING;

@@ -182,6 +182,7 @@ voice_assistant:
   volume_multiplier: 1.0
   on_listening:
     - lambda: |-
+        id(spk_duplex).set_mute_state(false);
         id(echo_state) = 1;
         ESP_LOGW("va", "Listening...");
   on_stt_vad_end:
@@ -190,10 +191,25 @@ voice_assistant:
     - lambda: 'ESP_LOGW("va", "STT: %s", x.c_str());'
   on_tts_start:
     - lambda: |-
+        // Reply on Sonos -> silence the board speaker for this reply
+        id(spk_duplex).set_mute_state(std::string(id(reply_speaker).current_option()) != "Board");
         id(echo_state) = 2;
         ESP_LOGW("va", "TTS: %s", x.c_str());
   on_tts_end:
-    - lambda: 'ESP_LOGW("va", "TTS ended");'
+    - lambda: 'ESP_LOGW("va", "TTS ended: %s", x.c_str());'
+    - if:
+        condition:
+          lambda: 'return std::string(id(reply_speaker).current_option()) != "Board";'
+        then:
+          - homeassistant.action:
+              action: media_player.play_media
+              data:
+                entity_id: !lambda |-
+                  return std::string(id(reply_speaker).current_option()) == "Sonos TV Room"
+                      ? "media_player.ac_left_ac_left" : "media_player.default_room_default_room";
+                media_content_id: !lambda 'return x;'
+                media_content_type: music
+                announce: "true"
   on_end:
     - lambda: 'ESP_LOGW("va", "Pipeline ended");'
   on_error:
@@ -566,6 +582,7 @@ script:
           // Navigate to clock page
           lv_obj_set_tile_id(id(main_tiles), 0, 0, LV_ANIM_ON);
           id(alarm_active) = true;
+          id(spk_duplex).set_mute_state(false);  // alarms always ring on the board
           xTaskCreatePinnedToCore([](void *param) {
             // Generate 400ms beep at 880Hz
             const int n = 16000 * 400 / 1000;
@@ -1198,6 +1215,19 @@ select:
     icon: mdi:palette
     on_value:
       - script.execute: update_buttons
+
+  - platform: template
+    name: "Reply Speaker"
+    id: reply_speaker
+    options:
+      - "Board"
+      - "Sonos Living Room"
+      - "Sonos TV Room"
+    initial_option: "Sonos Living Room"
+    optimistic: true
+    restore_value: true
+    entity_category: config
+    icon: mdi:speaker-wireless
 
   - platform: template
     name: "Button 1 Action"

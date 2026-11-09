@@ -24,6 +24,12 @@ class DuplexSpeaker : public speaker::Speaker, public Component {
   bool has_buffered_data() const override;
 
   void set_tx_handle(i2s_chan_handle_t handle) { this->tx_handle_ = handle; }
+  // Mute = keep the amp off (GPIO1 high) while audio still flows, so pipeline timing is unchanged.
+  void set_mute_state(bool mute_state) override {
+    this->mute_state_ = mute_state;
+    if (this->state_ == speaker::STATE_RUNNING)
+      gpio_set_level(GPIO_NUM_1, mute_state ? 1 : 0);
+  }
 
  protected:
   static void speaker_task_(void *param);
