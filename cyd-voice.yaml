@@ -157,6 +157,7 @@ micro_wake_word:
   microphone: mic_duplex
   models:
     - model: okay_nabu
+      id: okay_nabu
   on_wake_word_detected:
     - lambda: 'ESP_LOGW("wake", ">>> WAKE WORD DETECTED! <<<");'
     - script.execute: screen_wake
@@ -1303,6 +1304,38 @@ number:
           }
           id(es8311_codec).write_byte(0x32, reg_val);
           ESP_LOGW("vol", "Volume %.0f (reg=0x%02X)", x, reg_val);
+
+  # Higher = stricter (fewer false wakes, may miss quiet/far speech). okay_nabu default is 85.
+  # Reference (Voice PE, DipCo corpus): 85 ~ 0 false wakes/h, 69 ~ 0.4/h, 56 ~ 0.75/h.
+  - platform: template
+    name: "Wake Word Threshold"
+    id: wake_threshold
+    icon: mdi:tune-vertical
+    min_value: 50
+    max_value: 99
+    step: 1
+    initial_value: 85
+    optimistic: true
+    restore_value: true
+    mode: slider
+    unit_of_measurement: "%"
+    entity_category: config
+    on_value:
+      - lambda: |-
+          id(okay_nabu).set_probability_cutoff((uint8_t)(x * 2.55f));
+          ESP_LOGW("wake", "Wake threshold %.0f%% (cutoff=%u)", x, (uint8_t)(x * 2.55f));
+
+switch:
+  # Model enable state is persisted to flash by micro_wake_word itself
+  - platform: template
+    name: "Wake Word"
+    id: wake_word_switch
+    icon: mdi:microphone-message
+    lambda: 'return id(okay_nabu).is_enabled();'
+    turn_on_action:
+      - micro_wake_word.enable_model: okay_nabu
+    turn_off_action:
+      - micro_wake_word.disable_model: okay_nabu
 
 select:
   - platform: template
